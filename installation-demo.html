@@ -148,19 +148,14 @@ function detectLoop() {
       calibrationFrames++;
       debugEl.innerHTML = `校准中... ${calibrationFrames}/${CALIBRATION_COUNT}<br>请保持正常坐姿<br>肤色占比: ${(skinRatio * 100).toFixed(1)}%`;
     } else {
-      // How much more skin than baseline?
-      // Baseline (normal sitting ~60cm): maybe 15-30% skin
-      // Close (~30cm): maybe 40-60% skin
-      // Very close (<20cm): 60%+ skin
-      const increase = skinRatio - baselineArea;
-      // Map: 0 increase = far, 0.15+ increase = close
-      const target = Math.min(1, Math.max(0, increase / 0.12));
+      // Simple threshold: skin > 70% = close
+      const skinPct = skinRatio * 100;
+      const target = skinPct >= 70 ? 1 : Math.max(0, (skinPct - 50) / 20);
       detectedProximity = detectedProximity * 0.7 + target * 0.3;
 
       debugEl.innerHTML =
-        `肤色基准: ${(baselineArea * 100).toFixed(1)}%<br>` +
-        `肤色当前: ${(skinRatio * 100).toFixed(1)}%<br>` +
-        `增量: +${(increase * 100).toFixed(1)}%<br>` +
+        `肤色占比: ${skinPct.toFixed(1)}% ${skinPct >= 70 ? '🔴' : '🟢'}<br>` +
+        `阈值: 70%<br>` +
         `距离值: ${detectedProximity.toFixed(2)}<br>` +
         `状态: ${detectedProximity > 0.35 ? '🔴 靠近 (舵机停)' : '🟢 远离 (舵机转)'}`;
     }
